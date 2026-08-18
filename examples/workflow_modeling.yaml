@@ -1,0 +1,28 @@
+schema_version: "1.0"
+
+input:
+  structure: "./synthetic_wt.pdb"
+  format: "pdb"
+
+variants:
+  mode: "explicit"
+  include_wt: true
+  file: "./mutations_modeling.csv"
+
+modeling:
+  enabled: true
+  backend: "schrodinger"
+  strategy: "sequential_from_wt"
+  local_minimization:
+    radius_angstrom: 5.0
+    include_nearby_nonprotein: true
+
+metrics: {}
+
+quality_control:
+  required_selections: []
+
+output:
+  directory: "./demo_modeling_output"
+  structure_formats: ["pdb"]
+  keep_intermediates: false

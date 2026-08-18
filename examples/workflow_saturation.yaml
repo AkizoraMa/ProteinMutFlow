@@ -1,0 +1,40 @@
+schema_version: "1.0"
+
+input:
+  structure: "./synthetic_wt.pdb"
+  format: "pdb"
+
+variants:
+  mode: "saturation_single"
+  include_wt: true
+  sites:
+    - chain: "A"
+      residue_number: 10
+      insertion_code: ""
+      expected_wt: "S"
+
+modeling:
+  enabled: true
+  backend: "schrodinger"
+  strategy: "sequential_from_wt"
+  local_minimization:
+    radius_angstrom: 5.0
+    include_nearby_nonprotein: true
+
+metrics:
+  sasa:
+    - name: "ligand_sasa"
+      selection: "resn LIG"
+      calculate_wt_delta: true
+
+quality_control:
+  required_selections:
+    - name: "ligand"
+      selection: "resn LIG"
+      minimum_count: 1
+      severity: "fail"
+
+output:
+  directory: "./demo_output"
+  structure_formats: ["pdb"]
+  keep_intermediates: false

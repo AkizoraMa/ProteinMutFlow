@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:protein-mutflow:schema:results:1.0",
+  "title": "ProteinMutFlow results.csv represented as row objects",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": [
+      "schema_version", "variant_id", "mutation_name", "mutation_count",
+      "structure_path", "model_status", "mutation_readback_status",
+      "metrics_status", "qc_status", "overall_status", "duration_seconds",
+      "issue_codes", "notes"
+    ],
+    "properties": {
+      "schema_version": {"const": "1.0"},
+      "variant_id": {"type": "string", "minLength": 1},
+      "mutation_name": {"type": "string", "minLength": 1},
+      "mutation_count": {"type": "integer", "minimum": 0},
+      "structure_path": {"type": "string"},
+      "model_status": {"$ref": "#/$defs/moduleStatus"},
+      "mutation_readback_status": {"$ref": "#/$defs/moduleStatus"},
+      "metrics_status": {"$ref": "#/$defs/moduleStatus"},
+      "qc_status": {"$ref": "#/$defs/moduleStatus"},
+      "overall_status": {"enum": ["OK", "CHECK", "FAILED", "NOT_RUN"]},
+      "duration_seconds": {"type": ["number", "null"], "minimum": 0},
+      "issue_codes": {"type": "string"},
+      "notes": {"type": "string"}
+    },
+    "patternProperties": {
+      "^metric__": {"type": ["number", "integer", "string", "null"]}
+    },
+    "additionalProperties": false
+  },
+  "$defs": {
+    "moduleStatus": {
+      "enum": ["OK", "CHECK", "FAILED", "SKIPPED", "NOT_REQUESTED"]
+    }
+  }
+}

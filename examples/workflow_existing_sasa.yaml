@@ -1,0 +1,34 @@
+schema_version: "1.0"
+
+input:
+  structure: "./synthetic_wt.pdb"
+  format: "pdb"
+
+variants:
+  mode: "explicit"
+  include_wt: true
+  file: "./mutations_existing.csv"
+
+modeling:
+  enabled: false
+
+metrics:
+  sasa:
+    - name: "ligand_sasa"
+      selection: "resn LIG"
+      calculate_wt_delta: true
+      dot_solvent: true
+      solvent_radius_angstrom: 1.4
+      dot_density: 3
+
+quality_control:
+  required_selections:
+    - name: "ligand"
+      selection: "resn LIG"
+      expected_count: 1
+      severity: "fail"
+
+output:
+  directory: "./demo_sasa_output"
+  structure_formats: ["pdb"]
+  keep_intermediates: false

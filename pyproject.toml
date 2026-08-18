@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "protein-mutflow"
+version = "0.1.0a1"
+description = "Deterministic batch protein mutation modeling and structural metrics orchestration"
+readme = "README.md"
+requires-python = ">=3.11,<3.13"
+license = {file = "LICENSE"}
+authors = [
+  {name = "BUCT iGEM Team"},
+  {name = "Ma Xiaoyang"},
+]
+keywords = ["protein", "mutation", "Schrodinger", "PyMOL", "iGEM"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: Microsoft :: Windows",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+dependencies = [
+  "PyYAML>=6,<7",
+  "jsonschema>=4.22,<5",
+]
+
+[project.scripts]
+mutflow = "mutflow.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+mutflow = ["schemas/*.json"]
+
+[tool.unittest]
+start-directory = "tests"

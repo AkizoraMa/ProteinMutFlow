@@ -1,0 +1,219 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:protein-mutflow:schema:workflow:1.0",
+  "title": "ProteinMutFlow workflow.yaml",
+  "type": "object",
+  "required": ["schema_version", "input", "variants", "modeling", "output"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "input": {
+      "type": "object",
+      "required": ["structure"],
+      "additionalProperties": false,
+      "properties": {
+        "structure": {"type": "string", "minLength": 1},
+        "format": {"enum": ["auto", "pdb", "maegz"], "default": "auto"}
+      }
+    },
+    "variants": {
+      "type": "object",
+      "required": ["mode"],
+      "additionalProperties": false,
+      "properties": {
+        "mode": {"enum": ["saturation_single", "explicit"]},
+        "include_wt": {"type": "boolean", "default": true},
+        "sites": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["chain", "residue_number"],
+            "additionalProperties": false,
+            "properties": {
+              "chain": {"type": "string", "minLength": 1},
+              "residue_number": {"type": "integer"},
+              "insertion_code": {"type": "string", "maxLength": 1, "default": ""},
+              "expected_wt": {"type": "string", "pattern": "^[ACDEFGHIKLMNPQRSTVWY]$"}
+            }
+          }
+        },
+        "file": {"type": "string", "minLength": 1}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"mode": {"const": "saturation_single"}}},
+          "then": {"required": ["sites"], "not": {"required": ["file"]}}
+        },
+        {
+          "if": {"properties": {"mode": {"const": "explicit"}}},
+          "then": {"required": ["file"], "not": {"required": ["sites"]}}
+        }
+      ]
+    },
+    "modeling": {
+      "type": "object",
+      "required": ["enabled"],
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "backend": {"const": "schrodinger"},
+        "strategy": {"const": "sequential_from_wt", "default": "sequential_from_wt"},
+        "local_minimization": {
+          "type": "object",
+          "required": ["radius_angstrom", "include_nearby_nonprotein"],
+          "additionalProperties": false,
+          "properties": {
+            "radius_angstrom": {"type": "number", "exclusiveMinimum": 0},
+            "include_nearby_nonprotein": {"type": "boolean"}
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"enabled": {"const": true}}},
+          "then": {"required": ["backend", "local_minimization"]}
+        }
+      ]
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "sasa": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/sasaMetric"},
+          "default": []
+        },
+        "minimum_distance": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/distanceMetric"},
+          "default": []
+        },
+        "clashes": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/clashMetric"},
+          "default": []
+        }
+      }
+    },
+    "quality_control": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "required_selections": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/selectionCheck"},
+          "default": []
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "required": ["directory"],
+      "additionalProperties": false,
+      "properties": {
+        "directory": {"type": "string", "minLength": 1},
+        "structure_formats": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"enum": ["pdb", "maegz"]},
+          "default": ["pdb"]
+        },
+        "keep_intermediates": {"type": "boolean", "default": false}
+      }
+    },
+    "execution": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "max_variants": {"type": "integer", "minimum": 1, "default": 500}
+      }
+    },
+    "backends": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schrodinger": {
+          "type": "object",
+          "required": ["home"],
+          "additionalProperties": false,
+          "properties": {"home": {"type": "string", "minLength": 1}}
+        },
+        "pymol": {
+          "type": "object",
+          "required": ["launcher"],
+          "additionalProperties": false,
+          "properties": {"launcher": {"type": "string", "minLength": 1}}
+        }
+      }
+    },
+    "extensions": {"type": "object", "additionalProperties": true}
+  },
+  "$defs": {
+    "metricName": {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"},
+    "sasaMetric": {
+      "type": "object",
+      "required": ["name", "selection"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {"$ref": "#/$defs/metricName"},
+        "selection": {"type": "string", "minLength": 1},
+        "calculate_wt_delta": {"type": "boolean", "default": false},
+        "dot_solvent": {"type": "boolean", "default": true},
+        "solvent_radius_angstrom": {"type": "number", "exclusiveMinimum": 0, "default": 1.4},
+        "dot_density": {"type": "integer", "minimum": 1, "maximum": 4, "default": 3}
+      }
+    },
+    "distanceMetric": {
+      "type": "object",
+      "required": ["name", "selection_a", "selection_b"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {"$ref": "#/$defs/metricName"},
+        "selection_a": {"type": "string", "minLength": 1},
+        "selection_b": {"type": "string", "minLength": 1},
+        "calculate_wt_delta": {"type": "boolean", "default": false}
+      }
+    },
+    "clashMetric": {
+      "type": "object",
+      "required": ["name", "selection_a", "selection_b"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {"$ref": "#/$defs/metricName"},
+        "selection_a": {"type": "string", "minLength": 1},
+        "selection_b": {"type": "string", "minLength": 1},
+        "clash_overlap_angstrom": {"type": "number", "minimum": 0, "default": 0.4},
+        "severe_overlap_angstrom": {"type": "number", "minimum": 0, "default": 0.8},
+        "vdw_radii": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {"pattern": "^[A-Z][a-z]?$"},
+          "additionalProperties": {"type": "number", "exclusiveMinimum": 0},
+          "default": {"C": 1.70, "N": 1.55, "O": 1.52, "S": 1.80, "P": 1.80}
+        },
+        "exclude_bonded_pairs": {"const": false, "default": false}
+      }
+    },
+    "selectionCheck": {
+      "type": "object",
+      "required": ["name", "selection", "severity"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {"$ref": "#/$defs/metricName"},
+        "selection": {"type": "string", "minLength": 1},
+        "expected_count": {"type": "integer", "minimum": 0},
+        "minimum_count": {"type": "integer", "minimum": 0},
+        "maximum_count": {"type": "integer", "minimum": 0},
+        "severity": {"enum": ["fail", "check"]}
+      },
+      "anyOf": [
+        {"required": ["expected_count"]},
+        {"required": ["minimum_count"]},
+        {"required": ["maximum_count"]}
+      ]
+    }
+  }
+}

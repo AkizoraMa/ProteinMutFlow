@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:protein-mutflow:schema:run:1.0",
+  "title": "ProteinMutFlow run.json",
+  "type": "object",
+  "required": [
+    "schema_version", "run_id", "mutflow_version", "state", "started_at",
+    "finished_at", "command", "input", "variants", "environment",
+    "execution", "metrics", "counts", "outputs"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "run_id": {"type": "string", "minLength": 1},
+    "mutflow_version": {"type": "string", "minLength": 1},
+    "state": {"enum": ["RUNNING", "COMPLETED", "COMPLETED_WITH_CHECKS", "FAILED", "INTERRUPTED"]},
+    "started_at": {"type": "string", "format": "date-time"},
+    "finished_at": {"type": ["string", "null"], "format": "date-time"},
+    "command": {"type": "string"},
+    "input": {"type": "object"},
+    "variants": {"type": "object"},
+    "environment": {"type": "object"},
+    "execution": {"type": "object"},
+    "metrics": {"type": "array"},
+    "counts": {
+      "type": "object",
+      "required": ["requested", "ok", "check", "failed", "not_run"],
+      "additionalProperties": false,
+      "properties": {
+        "requested": {"type": "integer", "minimum": 0},
+        "ok": {"type": "integer", "minimum": 0},
+        "check": {"type": "integer", "minimum": 0},
+        "failed": {"type": "integer", "minimum": 0},
+        "not_run": {"type": "integer", "minimum": 0}
+      }
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["structures_directory", "results_csv", "log"],
+      "additionalProperties": false,
+      "properties": {
+        "structures_directory": {"type": "string", "minLength": 1},
+        "results_csv": {"type": "string", "minLength": 1},
+        "log": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

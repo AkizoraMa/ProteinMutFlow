@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "If you use ProteinMutFlow, please cite this software and acknowledge the external scientific tools used in your workflow."
+title: "ProteinMutFlow"
+type: software
+version: "0.1.0-alpha.1"
+date-released: 2026-08-18
+license: MIT
+authors:
+  - name: "BUCT iGEM Team"
+  - family-names: "Ma"
+    given-names: "Xiaoyang"
+    affiliation: "Beijing University of Chemical Technology"

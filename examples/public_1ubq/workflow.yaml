@@ -1,0 +1,61 @@
+schema_version: "1.0"
+
+input:
+  structure: "./1UBQ_prepared.pdb"
+  format: "pdb"
+
+variants:
+  mode: "explicit"
+  include_wt: true
+  file: "./mutations.csv"
+
+modeling:
+  enabled: true
+  backend: "schrodinger"
+  strategy: "sequential_from_wt"
+  local_minimization:
+    radius_angstrom: 5.0
+    include_nearby_nonprotein: true
+
+metrics:
+  sasa:
+    - name: "protein_sasa"
+      selection: "polymer.protein"
+      calculate_wt_delta: true
+      dot_solvent: true
+      solvent_radius_angstrom: 1.4
+      dot_density: 3
+    - name: "mutation_region_sasa"
+      selection: "chain A and resi 10+11"
+      calculate_wt_delta: true
+      dot_solvent: true
+      solvent_radius_angstrom: 1.4
+      dot_density: 3
+  minimum_distance:
+    - name: "mutation_region_distal_distance"
+      selection_a: "chain A and resi 10+11 and not name N+CA+C+O+OXT"
+      selection_b: "polymer.protein and not (chain A and resi 9+10+11+12)"
+      calculate_wt_delta: true
+  clashes:
+    - name: "mutation_region_distal_clash"
+      selection_a: "chain A and resi 10+11 and not name N+CA+C+O+OXT"
+      selection_b: "polymer.protein and not (chain A and resi 9+10+11+12)"
+      clash_overlap_angstrom: 0.4
+      severe_overlap_angstrom: 0.8
+      exclude_bonded_pairs: false
+
+quality_control:
+  required_selections:
+    - name: "mutation_region_backbone"
+      selection: "chain A and resi 10+11 and name N+CA+C+O"
+      expected_count: 8
+      severity: "fail"
+    - name: "mutation_region_sidechain"
+      selection: "chain A and resi 10+11 and not name N+CA+C+O+OXT and not hydro"
+      minimum_count: 1
+      severity: "fail"
+
+output:
+  directory: "./output"
+  structure_formats: ["pdb"]
+  keep_intermediates: false
